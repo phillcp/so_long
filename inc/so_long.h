@@ -6,12 +6,16 @@
 /*   By: phill <phill@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/07 19:11:26 by phill             #+#    #+#             */
-/*   Updated: 2022/03/12 01:47:43 by phill            ###   ########.fr       */
+/*   Updated: 2022/03/14 21:08:07 by phill            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SO_LONG_H
 # define SO_LONG_H
+
+# include <stdlib.h>
+# include <stdio.h>
+# include <fcntl.h>
 
 # include "libft.h"
 # include "get_next_line.h"
@@ -19,12 +23,13 @@
 # include "mlx_keys.h"
 # include "map.h"
 
-typedef struct	s_pos
+typedef struct s_pos
 {
 	int	x;
 	int	y;
 }				t_pos;
-typedef struct	s_img
+
+typedef struct s_img
 {
 	void	*img;
 	char	*addr;
@@ -33,7 +38,7 @@ typedef struct	s_img
 	int		endian;
 }				t_img;
 
-typedef struct	s_screen
+typedef struct s_screen
 {
 	void	*win;
 	int		width;
@@ -42,7 +47,7 @@ typedef struct	s_screen
 	t_img	*img;
 }				t_screen;
 
-typedef struct	s_entit
+typedef struct s_entit
 {
 	int	x;
 	int	y;
@@ -50,7 +55,7 @@ typedef struct	s_entit
 	int	dead;
 }				t_entit;
 
-typedef struct	s_game
+typedef struct s_game
 {
 	int			width;
 	int			height;
@@ -63,11 +68,50 @@ typedef struct	s_game
 	t_entit		*enemy;
 }				t_game;
 
-typedef struct	s_app
+typedef struct s_app
 {
 	void		*mlx;
 	t_screen	screen;
 	t_game		game;
 }				t_app;
+
+void	free_map(t_game *game);
+void	err_exit(char *err, t_app *app);
+int		stop(void *param);
+int		key_hook(int keycode, void *param);
+
+void	scan_line(t_app *app, char *line, int height);
+void	map_height(t_app *app, const char *file);
+void	load_map(t_app *app, const char *file);
+void	read_map(t_app *app, const char *file);
+
+void	render_bg(t_app *app);
+void	render_out_walls(t_app *app);
+void	render_steps(t_app *app);
+void	render_in_walls(t_app *app);
+void	render_coll(t_app *app);
+void	render_enemies(t_app *app);
+void	render_exit(t_app *app);
+void	render_player(t_app *app);
+int		update(t_app *app);
+
+void	screen_init(t_app *app);
+int		init(t_app *app, const char *file);
+void	first_frame(t_app *app);
+
+void	my_mlx_pixel_put(t_img *img, int x, int y, unsigned int color);
+int		frame(t_app *app);
+t_img	*import_image(t_app *app, char a, int x, int y);
+int		place_img(t_app *app, char tile, t_pos p);
+
+void	check_sides(t_app *app, char *line);
+void	check_h_wall(t_app *app, char *line, int bottom);
+void	check_width(t_app *app);
+void	check_chars(t_app *app, char *line);
+void	map_check(t_app *app);
+
+void	move(t_app *app, int keycode);
+void	can_move(t_app *app, int keycode, int x, int y);
+void	check_move(t_app *app, int keycode);
 
 #endif

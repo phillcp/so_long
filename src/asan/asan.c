@@ -1,29 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strchr.c                                        :+:      :+:    :+:   */
+/*   asan.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fheaton- <fheaton-@students.42.fr>         +#+  +:+       +#+        */
+/*   By: phill <phill@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/11/26 02:26:39 by marvin            #+#    #+#             */
-/*   Updated: 2021/02/16 16:02:55 by fheaton-         ###   ########.fr       */
+/*   Created: 2022/03/14 18:36:08 by phill             #+#    #+#             */
+/*   Updated: 2022/03/14 18:36:15 by phill            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-
-char	*ft_strchr(const char *s, int c)
+const char *
+	__asan_default_options(void)
 {
-	int	a;
-
-	a = 0;
-	while (s[a] != '\0')
-	{
-		if (s[a] == (unsigned char)c)
-			return ((char *)s + a);
-		a++;
-	}
-	if (c == '\0')
-		return ((char *)s + a);
-	return (NULL);
+	return ("strict_string_checks=1:\
+		detect_stack_use_after_return=1:\
+		check_initialization_order=1:\
+		strict_init_order=1:\
+		detect_invalid_pointer_pairs=9:\
+		halt_on_error=0:\
+		use_unaligned=1");
 }

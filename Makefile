@@ -37,7 +37,7 @@
 ################################################################################
 
 # Name of a single binary. Add as many variables as required by the project
-NAME1 := main
+NAME1 := so_long
 
 # The names of all the binaries. Add aditional variables created above separated
 # by space.
@@ -69,12 +69,14 @@ CREATE_LIB_TARGETS := 1
 # Pedantic allows for extra warning flags to be used while compiling. If set to
 # true these flags are applied. If set to anything else the flags will not be
 # used. By default it's turned on.
-PEDANTIC := true
+PEDANTIC := false
 
 # Specify the language use by your program. This will allow to detect file
 # extentions automatically (not implemented). It also allows fo warnings to be
 # activated/deactivated based on the language used.
 LANG := C
+
+MLX = mms
 
 ################################################################################
 # Compiler & Flags
@@ -117,7 +119,7 @@ ASAN += -fsanitize=pointer-subtract -fsanitize=pointer-compare
 # Technicaly UBSan but works with ASan
 ASAN += -fsanitize=undefined
 # Technicaly LSan but works with ASan
-ASAN += -fsanitize=leak
+# ASAN += -fsanitize=leak
 # Thread sanitizing flags
 TSAN := -fsanitize=thread
 # Memory sanitizing flags
@@ -130,7 +132,7 @@ MSAN := -fsanitize=memory -fsanitize-memory-track-origins
 BIN_ROOT := bin/
 DEP_ROOT := dep/
 INC_ROOT := inc/
-LIB_ROOT := libft/
+LIB_ROOT := lib/
 OBJ_ROOT := obj/
 SRC_ROOT := src/
 
@@ -139,15 +141,12 @@ SRC_ROOT := src/
 ################################################################################
 
 # Libft
-LIBFT_ROOT := ${LIB_ROOT}
+LIBFT_ROOT := ${LIB_ROOT}libft/
 LIBFT_INC := ${LIBFT_ROOT}inc/
-LIBFT := ${LIBFT_ROOT}/bin/libft.a
+LIBFT := ${LIBFT_ROOT}bin/libft.a
 
 INC_DIRS += ${LIBFT_INC}
-LIBS += -L${LIBFT_ROOT}/bin -lft
-
-INC_DIRS += ./minilibx-linux/
-LIBS += -L./minilibx-linux/ -lmlx -lm -lXext -lX11
+LIBS += -L${LIBFT_ROOT}bin -lft
 
 # Libraries for which to create default targets. All libraries in this list will
 # have targets created autimatically. The targets that are created are set in
@@ -201,7 +200,7 @@ INC_DIRS += ${INC_ROOT}
 ################################################################################
 
 SRCS_LIST = $(foreach dl,${SRC_DIRS_LIST},$(subst ${SPACE},:,$(strip $(foreach\
-	dir,$(su	bst :,${SPACE},${dl}),$(wildcard ${dir}*.c)))))
+	dir,$(subst :,${SPACE},${dl}),$(wildcard ${dir}*.c)))))
 OBJS_LIST = $(subst ${SRC_ROOT},${OBJ_ROOT},$(subst .c,.o,${SRCS_LIST}))
 
 SRCS = $(foreach dir,${SRC_DIRS},$(wildcard ${dir}*.c))
@@ -216,11 +215,11 @@ BINS := ${addprefix ${BIN_ROOT},${NAMES}}
 # Conditions
 ################################################################################
 
-ifeq ($(shell uname),Linux)
-	SED := sed -i.tmp --expression
-else ifeq ($(shell uname),Darwin)
-	SED := sed -i.tmp
-endif
+MLX_LIB_ROOT := ${LIB_ROOT}minilibx_mms_20200219/
+LIBS += -L${MLX_LIB_ROOT} -lmlx
+MLX_LIB := ./libmlx.dylib
+INCS += $(addprefix -I, ${MLX_LIB_ROOT})
+SED := sed -i.tmp
 
 ifeq ($(VERBOSE),0)
 	MAKEFLAGS += --silent
@@ -231,10 +230,6 @@ else ifeq ($(VERBOSE),2)
 	AT := @
 else ifeq ($(VERBOSE),4)
 	MAKEFLAGS += --debug=v
-endif
-
-ifeq (${CREATE_LIB_TARGETS},0)
-	undefine DEFAULT_LIBS
 endif
 
 ################################################################################
@@ -253,11 +248,15 @@ vpath %.d $(DEP_DIRS)
 all: ${BINS}
 
 .SECONDEXPANSION:
-${BIN_ROOT}${NAME1}: ${LIBFT} $$(call get_files,$${@F},$${OBJS_LIST})
+${BIN_ROOT}${NAME1}: ${LIBFT} ${MLX_LIB} $$(call get_files,$${@F},$${OBJS_LIST})
 	${AT}printf "\033[33m[CREATING ${@F}]\033[0m\n" ${BLOCK}
 	${AT}mkdir -p ${@D} ${BLOCK}
 	${AT}${CC} ${CFLAGS} ${INCS} ${ASAN_FILE}\
 		$(call get_files,${@F},${OBJS_LIST}) ${LIBS} -o $@ ${BLOCK}
+
+${MLX_LIB}:
+	${AT}make -C ${MLX_LIB_ROOT} ${BLOCK}
+	${AT}cp ${MLX_LIB_ROOT}${MLX_LIB} ${MLX_LIB} ${BLOCK}
 
 ${LIBFT}: $$(call get_lib_target,$${DEFAULT_LIBS},all) ;
 
@@ -267,26 +266,30 @@ ${LIBFT}: $$(call get_lib_target,$${DEFAULT_LIBS},all) ;
 
 clean: $$(call get_lib_target,$${DEFAULT_LIBS},$$@)
 	${AT}printf "\033[38;5;1m[REMOVING OBJECTS]\033[0m\n" ${BLOCK}
-	${AT}mkdir -p ${OBJ_ROOT} ${BLOCK}
-	${AT}find ${OBJ_ROOT} -type f -name "*.o" -delete ${BLOCK}
+	${AT}rm -rf ${OBJ_ROOT} ${BLOCK}
+	# ${AT}mkdir -p ${OBJ_ROOT} ${BLOCK}
+	# ${AT}find ${OBJ_ROOT} -type f -name "*.o" -delete ${BLOCK}
 
 fclean: $$(call get_lib_target,$${DEFAULT_LIBS},$$@)
 	${AT}printf "\033[38;5;1m[REMOVING OBJECTS]\033[0m\n" ${BLOCK}
-	${AT}mkdir -p ${OBJ_ROOT} ${BLOCK}
-	${AT}find ${OBJ_ROOT} -type f -name "*.o" -delete ${BLOCK}
+	${AT}rm -rf ${OBJ_ROOT} ${BLOCK}
+	# ${AT}mkdir -p ${OBJ_ROOT} ${BLOCK}
+	# ${AT}find ${OBJ_ROOT} -type f -name "*.o" -delete ${BLOCK}
 	${AT}printf "\033[38;5;1m[REMOVING BINARIES]\033[0m\n" ${BLOCK}
-	${AT}mkdir -p ${BIN_ROOT} ${BLOCK}
-	${AT}find ${BIN_ROOT} -type f\
-		$(addprefix -name ,${NAMES}) -delete ${BLOCK}
+	${AT}rm -rf ${BIN_ROOT} ${BLOCK}
+	# ${AT}mkdir -p ${BIN_ROOT} ${BLOCK}
+	# ${AT}find ${BIN_ROOT} -type f\
+	# 	$(addprefix -name ,${NAMES}) -delete ${BLOCK}
 
 clean_dep: $$(call get_lib_target,$${DEFAULT_LIBS},$$@)
 	${AT}printf "\033[38;5;1m[REMOVING DEPENDENCIES]\033[0m\n" ${BLOCK}
-	${AT}mkdir -p ${DEP_ROOT} ${BLOCK}
-	${AT}find ${DEP_ROOT} -type f -name "*.d" -delete ${BLOCK}
+	${AT}rm -rf ${DEP_ROOT} ${BLOCK}
+	# ${AT}mkdir -p ${DEP_ROOT} ${BLOCK}
+	# ${AT}find ${DEP_ROOT} -type f -name "*.d" -delete ${BLOCK}
 
 clean_all: fclean clean_dep
 
-re: clean_all all
+re: fclean all
 
 ################################################################################
 # Debug Targets

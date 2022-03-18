@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strjoin.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fheaton- <fheaton-@students.42.fr>         +#+  +:+       +#+        */
+/*   By: fheaton- <fheaton-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/05 13:59:11 by marvin            #+#    #+#             */
-/*   Updated: 2021/02/12 19:18:06 by fheaton-         ###   ########.fr       */
+/*   Updated: 2022/03/14 21:45:59 by fheaton-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,25 +15,26 @@
 char	*ft_strjoin(char const *s1, char const *s2)
 {
 	char	*str;
-	size_t	len1;
-	size_t	len2;
+	size_t	len;
+	size_t	a;
+	size_t	b;
 
 	if (!s1 && !s2)
 		return (NULL);
-	if (!s1 || !s2)
-	{
-		if (!s1)
-			return (ft_strdup(s1));
-		else
-			return (ft_strdup(s2));
-	}
-	len1 = ft_strlen((char *)s1);
-	len2 = ft_strlen((char *)s2);
-	str = malloc((len1 + len2 + 1) * sizeof(char));
+	if (!s1)
+		return (ft_strdup(s2));
+	if (!s2)
+		return (ft_strdup(s1));
+	len = ft_strlen(s1) + ft_strlen(s2);
+	str = malloc(len + 1);
 	if (!str)
 		return (NULL);
-	ft_strlcpy(str, s1, len1 + 1);
-	ft_strlcat(str + len1, (char *)s2, len2 + 1);
-	str[len1 + len2 + 1] = '\0';
+	a = -1;
+	while (s1[++a])
+		str[a] = s1[a];
+	b = 0;
+	while (s2[b])
+		str[a++] = s2[b++];
+	str[a] = '\0';
 	return (str);
 }
